@@ -122,12 +122,11 @@ defmodule Ecto.InstaShard.Sharding.Setup do
         shard(integer_id)
       end
 
-      def shard(parent_id) do
-        rem(Ecto.InstaShard.Sharding.Hashing.item_hash(parent_id), @setup[:logical_shards])
+      def shard(parent_id) when is_number(parent_id) do
+        Ecto.InstaShard.Sharding.Hashing.get_shard_for_id(id, @setup[:logical_shards])
       end
 
       def shard_name(parent_id), do: "shard#{shard(parent_id)}"
-      def shard_name(id, :extract), do: "shard#{Ecto.InstaShard.Sharding.Hashing.extract(id)}"
 
       def repository(parent_id) do
         repository_from_shard(shard(parent_id))

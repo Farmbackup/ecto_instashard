@@ -205,18 +205,9 @@ defmodule Ecto.InstaShard.Sharding.Setup do
         %{query | prefix: shard_name(parent_id)}
       end
 
-      def add_query_prefix(query, id, :extract) do
-        %{query | prefix: shard_name(id, :extract)}
-      end
-
       def get_all(parent_id, table_name, where, select) do
         from(table_name, where: ^where, select: ^select)
         |> do_get_all(parent_id)
-      end
-
-      def get_all(id, table_name, where, select, :extract) do
-        from(table_name, where: ^where, select: ^select)
-        |> do_get_all(id, :extract)
       end
 
       def get_all_ordered(parent_id, table_name, where, select, order_by) do
@@ -224,19 +215,9 @@ defmodule Ecto.InstaShard.Sharding.Setup do
         |> do_get_all(parent_id)
       end
 
-      def get_all_ordered(id, table_name, where, select, order_by, :extract) do
-        from(table_name, where: ^where, select: ^select, order_by: ^order_by)
-        |> do_get_all(id, :extract)
-      end
-
       def get(parent_id, table_name, where, select, limit) do
         from(table_name, where: ^where, select: ^select, limit: ^limit)
         |> do_get_all(parent_id)
-      end
-
-      def get(id, table_name, where, select, limit, :extract) do
-        from(table_name, where: ^where, select: ^select, limit: ^limit)
-        |> do_get_all(id, :extract)
       end
 
       def get_ordered(parent_id, table_name, where, select, limit, order_by) do
@@ -244,23 +225,10 @@ defmodule Ecto.InstaShard.Sharding.Setup do
         |> do_get_all(parent_id)
       end
 
-      def get_ordered(id, table_name, where, select, limit, order_by, :extract) do
-        from(table_name, where: ^where, select: ^select, limit: ^limit, order_by: ^order_by)
-        |> do_get_all(id, :extract)
-      end
-
       def do_get_all(query, parent_id) do
         query
         |> add_query_prefix(parent_id)
         |> repository(parent_id).all
-      end
-
-      def do_get_all(query, id, :extract) do
-        shard = Ecto.InstaShard.Sharding.Hashing.extract(id)
-
-        query
-        |> add_query_prefix(id, :extract)
-        |> repository_from_shard(shard).all
       end
 
       def update_all(parent_id, where, update, opts \\ []) do

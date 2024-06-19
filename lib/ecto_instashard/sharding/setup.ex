@@ -125,7 +125,7 @@ defmodule Ecto.InstaShard.Sharding.Setup do
       def shard(parent_id) when is_number(parent_id) and @setup[:one_shard_per_parent], do: parent_id
 
       def shard(parent_id) when is_number(parent_id) do
-        Ecto.InstaShard.Sharding.Hashing.get_shard_for_id(id, @setup[:logical_shards])
+        Ecto.InstaShard.Sharding.Hashing.get_shard_for_id(parent_id, @setup[:logical_shards])
       end
 
       def shard_name(parent_id), do: "shard#{shard(parent_id)}"

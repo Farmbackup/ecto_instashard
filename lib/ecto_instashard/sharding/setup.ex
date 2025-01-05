@@ -22,6 +22,7 @@ defmodule Ecto.InstaShard.Sharding.Setup do
       @repository_name unquote(config[:name])
       @table_name unquote(config[:table])
       @dynamic_init unquote(config[:dynamic_init])
+      @use_modulus_hashing unquote(config[:use_modulus_hashing])
 
       def include_repository_supervisor(children) do
         count = setup_key(:count)
@@ -122,7 +123,8 @@ defmodule Ecto.InstaShard.Sharding.Setup do
         shard(integer_id)
       end
 
-      def shard(parent_id) when is_number(parent_id) do
+      # Simple modulus based hashing
+      def shard(parent_id) when is_number(parent_id) and not is_nil(@use_modulus_hashing) and @use_modulus_hashing do
         if not is_nil(@setup[:one_shard_per_parent]) and @setup[:one_shard_per_parent] == true do
           parent_id
         else
@@ -130,7 +132,17 @@ defmodule Ecto.InstaShard.Sharding.Setup do
         end
       end
 
+      # Legacy hashing based on erlang.phash2
+      def shard(parent_id) when is_number(parent_id) do
+        if not is_nil(@setup[:one_shard_per_parent]) and @setup[:one_shard_per_parent] == true do
+          parent_id
+        else
+          rem(Ecto.InstaShard.Sharding.Hashing.item_hash(parent_id), @setup[:logical_shards])
+        end
+      end
+
       def shard_name(parent_id), do: "shard#{shard(parent_id)}"
+      def shard_name_from_shard(shard), do: "shard#{shard}"
 
       def repository(parent_id) do
         repository_from_shard(shard(parent_id))
